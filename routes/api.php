@@ -21,11 +21,9 @@ Route::group([
 ], function () {
     Route::apiResource('alunos', AlunoController::class)->except(['destroy']);
 
-    Route::group(['middleware' => 'role:gestor'], function () {
-        Route::patch('alunos/{aluno}/status', [AlunoController::class, 'updateStatus']);
+    Route::patch('alunos/{aluno}/status', [AlunoController::class, 'updateStatus']);
 
-        Route::delete('alunos/{aluno}', [AlunoController::class, 'destroy']);
-    });
+    Route::delete('alunos/{aluno}', [AlunoController::class, 'destroy']);
 });
 
 Route::get('/test', function () {
