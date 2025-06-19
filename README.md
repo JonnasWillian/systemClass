@@ -17,7 +17,7 @@ Esta API fornece um sistema completo para gestão de alunos, com autenticação 
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/seu-repositorio.git
+git clone https://github.com/JonnasWillian/systemClass
 cd seu-repositorio
 ```
 
@@ -25,7 +25,7 @@ cd seu-repositorio
 
 ```bash
 composer install
-npm install  # Se usar frontend
+npm install
 ```
 
 ### 3. Configurar ambiente
