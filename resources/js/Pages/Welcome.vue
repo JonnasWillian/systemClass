@@ -73,7 +73,9 @@
               <label class="block text-sm font-medium text-gray-700">CPF</label>
               <input
                 v-model="filters.cpf"
+                @input="applyCPFMask"
                 type="text"
+                maxlength="14"
                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="000.000.000-00"
               />
@@ -237,7 +239,9 @@
                 <label class="block text-sm font-medium text-gray-700">CPF</label>
                 <input
                   v-model="form.cpf"
+                  @input="applyCPFMask"
                   type="text"
+                  maxlength="14"
                   required
                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="000.000.000-00"
@@ -293,7 +297,8 @@
   
 <script setup>
   import { ref, reactive, computed, onMounted, watch } from 'vue'
-  
+  import axios from 'axios'
+
   const isAuthenticated = ref(false)
   const user = ref(null)
   const token = ref(localStorage.getItem('token') || '')
@@ -302,6 +307,7 @@
   const showModal = ref(false)
   const editingAluno = ref(null)
   
+  // Formulários
   const loginForm = reactive({
     email: '',
     password: ''
@@ -309,6 +315,7 @@
   
   const form = reactive({
     nome: '',
+    email: '',
     cpf: '',
     data_nascimento: '',
     turma: ''
@@ -320,7 +327,38 @@
     turma: '',
     status: ''
   })
+
+  const formatCPF = (value) => {
+    if (!value) return ''
+
+    const cleanValue = value.replace(/\D/g, '')
+
+    if (cleanValue.length <= 11) {
+      return cleanValue
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+    }
+    
+    return cleanValue.slice(0, 11)
+      .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+  }
   
+  const applyCPFMask = (event) => {
+    const input = event.target
+    const cursorPosition = input.selectionStart
+    const oldValue = input.value
+    const newValue = formatCPF(input.value)
+    
+    input.value = newValue
+
+    if (newValue.length > oldValue.length) {
+      input.setSelectionRange(cursorPosition + 1, cursorPosition + 1)
+    } else {
+      input.setSelectionRange(cursorPosition, cursorPosition)
+    }
+  }
+
   const pagination = reactive({
     current_page: 1,
     last_page: 1,
@@ -329,7 +367,7 @@
     from: 0,
     to: 0
   })
-  
+
   const toast = reactive({
     show: false,
     message: '',
@@ -347,8 +385,16 @@
     return pages
   })
 
+  watch(() => filters.cpf, (newValue) => {
+    filters.cpf = formatCPF(newValue)
+  })
+
+  watch(() => form.cpf, (newValue) => {
+    form.cpf = formatCPF(newValue)
+  })
+
   const API_BASE = 'http://localhost:8000/api'
-  
+
   const setAuthHeader = () => {
     if (token.value) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
@@ -451,7 +497,6 @@
       }
     } catch (error) {
       showToast('Erro ao carregar alunos', 'error')
-      console.log('error fetchAlunos', error)
     } finally {
       loading.value = false
     }
@@ -542,7 +587,7 @@
     if (aluno) {
       Object.assign(form, {
         nome: aluno.nome,
-        cpf: aluno.cpf,
+        cpf: formatCPF(aluno.cpf),
         data_nascimento: aluno.data_nascimento,
         turma: aluno.turma
       })
@@ -603,7 +648,7 @@
       })
     }
   })
-</script>Sair
+</script>
   
 <style scoped>
   .fade-enter-active, .fade-leave-active {
